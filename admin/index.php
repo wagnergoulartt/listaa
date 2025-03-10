@@ -94,7 +94,7 @@
                             // Botão de compartilhar com WhatsApp
                             if (!empty($row["whatsapp"])) {
                                 $whatsappNumber = preg_replace("/[^0-9]/", "", $row["whatsapp"]);
-                                $message = "Olá! Aqui está seu QR Code para a Social: https://socializando.com.br/qr.php?id=" . $row["id"];
+                                $message = "Olá! Aqui está seu QR Code para a Social: https://socializando.com.br/social/qr.php?id=" . $row["id"];
                                 echo "<a href='https://wa.me/55" . $whatsappNumber . "?text=" . urlencode($message) . "' target='_blank' class='btn btn-success btn-sm'>Compartilhar</a>";
                             }
                             
