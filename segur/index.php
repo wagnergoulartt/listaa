@@ -162,41 +162,56 @@
             $(this).hide(); // Esconde o botão após iniciar o scanner
         });
 
-        function onScanSuccess(decodedText, decodedResult) {
-            try {
-                const url = new URL(decodedText);
-                const id = url.searchParams.get('id');
-                
-                if (id) {
-                    $.ajax({
-                        url: 'confirmar_qr.php',
-                        method: 'POST',
-                        data: { id: id },
-                        success: function(response) {
-                            const data = JSON.parse(response);
-                            const resultDiv = $('#result');
-                            
-                            if (data.status === 'success') {
-                                resultDiv.removeClass('alert-danger').addClass('alert-success');
-                                resultDiv.html(`Convidado confirmado: ${data.nome}`);
-                                setTimeout(() => location.reload(), 2000);
-                            } else {
-                                resultDiv.removeClass('alert-success').addClass('alert-danger');
-                                resultDiv.html(data.message);
-                            }
-                            resultDiv.show();
-                        },
-                        error: function() {
-                            $('#result').removeClass('alert-success').addClass('alert-danger')
-                                      .html('Erro ao processar o QR Code')
-                                      .show();
+function onScanSuccess(decodedText, decodedResult) {
+    try {
+        // Extrair o ID diretamente da string do QR code
+        const id = decodedText.split('id=')[1];
+        
+        if (id) {
+            $.ajax({
+                url: 'confirmar_qr.php',
+                method: 'POST',
+                data: { id: id },
+                success: function(response) {
+                    const resultDiv = $('#result');
+                    resultDiv.show();
+                    
+                    try {
+                        const data = JSON.parse(response);
+                        if (data.status === 'success') {
+                            resultDiv.removeClass('alert-danger').addClass('alert-success');
+                            resultDiv.html(`Convidado confirmado: ${data.nome}`);
+                            setTimeout(() => location.reload(), 2000);
+                        } else {
+                            resultDiv.removeClass('alert-success').addClass('alert-danger');
+                            resultDiv.html(data.message);
                         }
-                    });
+                    } catch (e) {
+                        resultDiv.removeClass('alert-success').addClass('alert-danger');
+                        resultDiv.html('Erro ao processar resposta do servidor');
+                    }
+                },
+                error: function() {
+                    $('#result').removeClass('alert-success')
+                              .addClass('alert-danger')
+                              .html('Erro ao processar o QR Code')
+                              .show();
                 }
-            } catch (error) {
-                console.error('Erro ao processar QR Code:', error);
-            }
+            });
+        } else {
+            $('#result').removeClass('alert-success')
+                      .addClass('alert-danger')
+                      .html('QR Code inválido')
+                      .show();
         }
+    } catch (error) {
+        console.error('Erro ao processar QR Code:', error);
+        $('#result').removeClass('alert-success')
+                  .addClass('alert-danger')
+                  .html('Erro ao processar QR Code')
+                  .show();
+    }
+}
 
         function onScanFailure(error) {
             console.warn(`Erro na leitura do QR Code: ${error}`);
